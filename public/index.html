@@ -1,0 +1,30 @@
+<html>
+<head>
+    <link rel='stylesheet' href='index.css'>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js'></script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js'></script>
+    <script src='index.js'></script>
+
+</head>
+<body>
+    <div id='signin'>
+
+        <input type='text' id='username'></input>
+        <br>
+        <input type='password' id='password'></input>
+        <br>
+        <button onclick='signin()' >Sign In</button>
+        <button onclick='register()' >Register</button>
+
+    </div>
+    <div id='app'>
+        <table>
+            <tr>
+                <th id='back'> < </th>
+                <th> Today </th>
+                <th id='forward'> > </th>
+            </tr>
+        </table>
+    </div>
+</body>
+</html>
