@@ -3,7 +3,10 @@
     <link rel='stylesheet' href='index.css'>
     <script src='https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js'></script>
     <script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js'></script>
+
+
     <script src='index.js'></script>
+
 
 </head>
 <body>
@@ -18,13 +21,180 @@
 
     </div>
     <div id='app'>
-        <table>
+        <table id='datechange'>
             <tr>
                 <th id='back'> < </th>
-                <th> Today </th>
+                <th id='currentday'> </th>
                 <th id='forward'> > </th>
             </tr>
         </table>
+        <div id='calendar_container'>
+            <table id='calendar'>
+                <tr id='times'>
+                <th>00:00</th>
+                <th>00:30</th>
+                <th>01:00</th>
+                <th>01:30</th>
+                <th>02:00</th>
+                <th>02:30</th>
+                <th>03:00</th>
+                <th>03:30</th>
+                <th>04:00</th>
+                <th>04:30</th>
+                <th>05:00</th>
+                <th>05:30</th>
+                <th>06:00</th>
+                <th>06:30</th>
+                <th>07:00</th>
+                <th>07:30</th>
+                <th>08:00</th>
+                <th>08:30</th>
+                <th>09:00</th>
+                <th>09:30</th>
+                <th>10:00</th>
+                <th>10:30</th>
+                <th>11:00</th>
+                <th>11:30</th>
+                <th>12:00</th>
+                <th>12:30</th>
+                <th>13:00</th>
+                <th>13:30</th>
+                <th>14:00</th>
+                <th>14:30</th>
+                <th>15:00</th>
+                <th>15:30</th>
+                <th>16:00</th>
+                <th>16:30</th>
+                <th>17:00</th>
+                <th>17:30</th>
+                <th>18:00</th>
+                <th>18:30</th>
+                <th>19:00</th>
+                <th>19:30</th>
+                <th>20:00</th>
+                <th>20:30</th>
+                <th>21:00</th>
+                <th>21:30</th>
+                <th>22:00</th>
+                <th>22:30</th>
+                <th>23:00</th>
+                <th>23:30</th>
+            </tr>
+                <tr id='events'>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+                <tr id='free'>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            </table>
+        </div>
+    </div>
+    <div id='create'>
+        Event name <input type='text' id='description'></input>
+        <br>
+        Duration (mins) <input type='number' id='duration'></input>
+        <br>
+        Earliest date <input type='date' id='earliest'></input>
+        <br>
+        Latest date <input type='date' id='latest'></input>
+        <br>
+        Participants <input type='text' id='participants'></input>
+        <br>
+        <button onclick='createevent()'>Create event</button>
     </div>
 </body>
 </html>

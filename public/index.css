@@ -1,0 +1,26 @@
+th, td {
+    border: 1px solid black;
+}
+
+td {
+    height: 50px;
+}
+
+tr#free td {
+    background-color: grey;
+}
+
+#datechange {
+    width: 100%;
+}
+
+#back, #forward {
+    width: 100
+
+}
+
+#app {
+    overflow: scroll;
+    max-width: 100%;
+    scroll-behavior: smooth;
+}
