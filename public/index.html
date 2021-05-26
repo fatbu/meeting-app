@@ -20,7 +20,7 @@
         <button onclick='register()' >Register</button>
 
     </div>
-    <div id='app'>
+    <div id='app' hidden>
         <table id='datechange'>
             <tr>
                 <th id='back'> < </th>
@@ -182,8 +182,10 @@
             </tr>
             </table>
         </div>
+        <div id='upcoming_events'></div>
+        <button onclick='showcreateevent()'>Create event</button>
     </div>
-    <div id='create'>
+    <div id='create' hidden>
         Event name <input type='text' id='description'></input>
         <br>
         Duration (mins) <input type='number' id='duration'></input>

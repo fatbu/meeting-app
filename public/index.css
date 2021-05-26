@@ -19,7 +19,7 @@ tr#free td {
 
 }
 
-#app {
+#calendar_container {
     overflow: scroll;
     max-width: 100%;
     scroll-behavior: smooth;

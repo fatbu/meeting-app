@@ -31,6 +31,11 @@ var register = function() {
     })
 }
 
+var showcreateevent = function() {
+    $('#app').hide()
+    $('#create').show()
+}
+
 var createevent = function() {
     if (!signedin) return
 
@@ -41,7 +46,7 @@ var createevent = function() {
     let earliestdate = $('#earliest').val()
     let latestdate = $('#latest').val()
     let participants = $('#participants').val().split(' ')
-
+    if (participants[0] === '') participants = []
     socket.emit('addevent', {
         desc: eventdesc,
         duration: eventdur,
@@ -49,10 +54,21 @@ var createevent = function() {
         latest: latestdate,
         participants: participants,
     })
+
+    $('#create').hide()
+    $('#app').show()
 }
 
 
 var dateView = new Date()
+dateView.setHours(0)
+dateView.setMinutes(0)
+dateView.setSeconds(0)
+dateView.setMilliseconds(0)
+
+console.log(dateView)
+console.log(dateView.getTime())
+
 
 var updateFree = function(freeSlots) {
     $('#free > td').each(function() {
@@ -63,11 +79,37 @@ var updateFree = function(freeSlots) {
         }
     })
 }
+
+var updateBusy = function(busySlots) {
+    if (!busySlots) return
+    $('#events > td').each(function() {
+
+        if (busySlots.includes(dateView.getTime() + $(this).index() * 1800000)) {
+            $(this).css('background-color', 'blue')
+        } else {
+            $(this).css('background-color', 'transparent')
+        }
+
+    })
+}
+
+var updateEvents = function(events) {
+    if (!events) return
+    for (let eventid in events) {
+        let event = events[eventid]
+        if (!event.time) continue
+        let eventdate = new Date(event.time)
+        if (eventdate.getDate() == dateView.getDate()) {
+            $('#upcoming_events').append('<p>' + eventdate.getHours() + ':' + eventdate.getMinutes() + ' ' + event.desc + '</p>')
+        }
+    }
+}
+
 $(document).ready(function() {
     $('tr#free td').click(function() {
         this.style.backgroundColor = this.style.backgroundColor == 'green' ? 'grey' : 'green';
         socket.emit('togglefree', {
-            date: dateView.toDateString(),
+            date: dateView.getTime(),
             index: $(this).index()
         })
         //console.log($(this).index())
@@ -78,12 +120,14 @@ $(document).ready(function() {
     $('#back').click(function() {
         dateView.setDate(dateView.getDate() - 1)
         $('#currentday').text(dateView.toDateString())
-        updateFree(userdata.frees[dateView.toDateString()])
+        updateFree(userdata.frees[dateView.getTime()])
+        updateBusy(userdata.busy)
     })
     $('#forward').click(function() {
         dateView.setDate(dateView.getDate() + 1)
         $('#currentday').text(dateView.toDateString())
-        updateFree(userdata.frees[dateView.toDateString()])
+        updateFree(userdata.frees[dateView.getTime()])
+        updateBusy(userdata.busy)
     })
 })
 
@@ -93,8 +137,11 @@ socket.on('signedin', function(user) {
     signedin = true
     signedinas = $('#username').val()
     userdata = user
-    updateFree(userdata.frees[dateView.toDateString()])
+    updateFree(userdata.frees[dateView.getTime()])
+    updateBusy(userdata.busy)
 
+    $('#app').show()
+    $('#signin').hide()
 })
 
 socket.on('signinfail', function() {
