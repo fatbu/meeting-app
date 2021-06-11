@@ -6,8 +6,10 @@ const dataFileName = './data/persistent.json'
 const fs = require('fs')
 const fileContents = fs.readFileSync(dataFileName, 'utf8')
 
+// parse data file
 var data = JSON.parse(fileContents)
 
+// writes data in the data variable to the data file
 var storeData = function() {
     fs.writeFileSync(dataFileName, JSON.stringify(data), 'utf8')
 }
@@ -61,17 +63,20 @@ function userFreeAtTime(username, time) {
 function calcTimeForEvent(eventId) {
     let event = data.events[eventId]
     let earliestdate = new Date(event.earliest)
+    // by default webpage date input initialises the time on a day to 8am,
+    // so it must be reset to the beginning of the day or it causes problems
     earliestdate.setHours(0)
     let latestdate = new Date(event.latest)
     // increment the latest date by 1, to allow setting an event time on the latest day itself
     latestdate.setDate(latestdate.getDate() + 1)
+    // convert the earliest possible time for the event and the latest possible time to epoch time
     let earliest = earliestdate.getTime()
     let latest = latestdate.getTime()
 
-    // event duration in milliseconds
+    // convert event duration from minutes to milliseconds
     let eventDuration = parseInt(event.duration) * 60 * 1000
 
-    // iterate over all possible event times
+    // iterate over all possible event times, incrementing by 30 minutes each loop
     for (let i = earliest; i < latest; i += 1800000) {
         // counter for the number of participants that are free during this particular timeslot
         let nFree = 0
@@ -79,18 +84,23 @@ function calcTimeForEvent(eventId) {
             if (eventDuration <= 30) {
                 // if event fits in one time slot, check if the participant is free during that slot
                 if (userFreeAtTime(participant, i)) {
+                    // increment counter
                     nFree++
                 }
             } else {
                 // if the event is longer than one time slot, check the time slots that follow it as well
-                let notFree = false
+                let notFree = false // assume the user is free
+                // iterate through possible timeslots
                 for (let t = i; t - i < eventDuration; t += 1800000) {
+                    // check if user is free at this time slot
                     if (!userFreeAtTime(participant, t)) {
+                        // if user is not free
                         notFree = true
                         break
                     }
                 }
                 if (!notFree) {
+                    // if the user is free, increment counter
                     nFree++
                 }
             }
@@ -100,26 +110,29 @@ function calcTimeForEvent(eventId) {
             // save event to each user's data
             // add to busy slots
             for (let participant of event.participants) {
+                // initialise busy array if it is undefined
                 data.users[participant].busy = data.users[participant].busy || []
 
-
                 if (eventDuration <= 30) {
+                    // if event only takes up one timeslot, only need to add one busy slot
                     data.users[participant].busy.push(i)
                 } else {
+                    // if event takes up multiple timeslots, add multiple busy slots, 30 minutes apart
                     for (let t = i; t - i < eventDuration; t += 1800000) {
                         data.users[participant].busy.push(t)
                     }
                 }
 
             }
+            // save time of event to event object
             data.events[eventId].time = i
+            // save data to file
             storeData()
-            console.log('Time found for event ' + eventId)
-            break
+            return true
         }
     }
+    return false
 }
-
 
 // server event listeners
 io.on('connection', function(socket) {
@@ -127,19 +140,19 @@ io.on('connection', function(socket) {
     let signedinas = false
     // user attempts to sign in
     socket.on('signin', function(cred) {
-        console.log(JSON.stringify(cred))
-
+        // check if user password is correct
         if (data.users[cred.username] && data.users[cred.username].password === cred.password) {
             // successful sign in
-            let userdata = data.users[cred.username]
-            if (userdata.events) {
-                userdata.userEvents = {}
-                for (let event of userdata.events) {
-                    userdata.userEvents[event] = data.events[event]
-                }
-            }
-            socket.emit('signedin', userdata)
 
+
+            let userdata = data.users[cred.username]
+            // add events to userdata object temporarily,
+            // before it is sent to the client.
+            // to minimise the number of unnecessary requests to the server
+
+            // send user object + event objects to client
+            socket.emit('signedin', userdata)
+            socket.emit('requestUpdate')
             // save username for later
             signedinas = cred.username
         } else {
@@ -149,8 +162,16 @@ io.on('connection', function(socket) {
     })
     // user registers
     socket.on('register', function(cred) {
+        // can't register twice
+        if (data.users[cred.username]) return
+
+        // save username and password to datafile
+
         data.users[cred.username] = {
-            password: cred.password
+            password: cred.password,
+            frees: {},
+            events: [],
+            busy: []
         }
 
         storeData()
@@ -160,20 +181,25 @@ io.on('connection', function(socket) {
     // since only the event ids are stored in the user objects,
     // need to add the event objects into the user objects
     // before sending it to the client
-    var updateUserData = function() {
-        let userdata = data.users[signedinas]
-        if (userdata && userdata.events) {
-            userdata.userEvents = {}
-            for (let event of userdata.events) {
-                userdata.userEvents[event] = data.events[event]
-            }
-        }
-        socket.emit('update', userdata)
-    }
-
+    // client has sent an update request
     // update the user data for the client
-    socket.on('update', function() {
-        updateUserData()
+    socket.on('update', function(username) {
+        if (!username) {
+            let userdata = data.users[signedinas]
+            if (userdata && userdata.events) {
+                userdata.userEvents = {}
+                for (let event of userdata.events) {
+                    userdata.userEvents[event] = data.events[event]
+                }
+            }
+
+            socket.emit('update', userdata)
+            userdata.userEvents = undefined
+        } else {
+            let userdata = data.users[username]
+            if (!userdata) return
+            socket.emit('update', userdata)
+        }
     })
 
     // toggle free slot
@@ -182,12 +208,13 @@ io.on('connection', function(socket) {
         let frees = data.users[signedinas].frees
         // initialise free slot objects if they do not exist
         // by default the user is not free in a slot
-        frees = frees || {}
+        frees = frees || {} // initialise free object if is not defined/filled
         frees[free.date] = frees[free.date] || new Array(48).fill(false)
-        frees[free.date][free.index] = !frees[free.date][free.index]
+        frees[free.date][free.index] = !frees[free.date][free.index] // toggle slot
         data.users[signedinas].frees = frees
         storeData()
-        updateUserData()
+        // notify client to update ui
+        socket.emit('requestUpdate')
     })
 
     // add event to users and calculate time
@@ -212,8 +239,14 @@ io.on('connection', function(socket) {
             data.users[username].events.push(eventid)
         }
         storeData()
-        console.log(event)
-        calcTimeForEvent(eventid)
+        let result = calcTimeForEvent(eventid)
+        if (result) {
+            // notify clients to update ui
+            io.emit('requestUpdate')
+        } else {
+            // creation of event failed
+            socket.emit('eventFail')
+        }
     })
 
 

@@ -12,15 +12,19 @@
 <body>
     <div id='signin'>
 
-        <input type='text' id='username'></input>
+        <input type='text' id='username'>
         <br>
-        <input type='password' id='password'></input>
+        <input type='password' id='password'>
         <br>
         <button onclick='signin()' >Sign In</button>
         <button onclick='register()' >Register</button>
 
     </div>
     <div id='app' hidden>
+        <button onclick='showcreateevent()'>Create event</button>
+        <input type='text' id='search'>
+        <button onclick='searchuser()'>View</button>
+        <button onclick='goback()' id='goback'>Go back</button>
         <table id='datechange'>
             <tr>
                 <th id='back'> < </th>
@@ -183,20 +187,21 @@
             </table>
         </div>
         <div id='upcoming_events'></div>
-        <button onclick='showcreateevent()'>Create event</button>
+
     </div>
     <div id='create' hidden>
-        Event name <input type='text' id='description'></input>
+        Event name <input type='text' id='description'>
         <br>
-        Duration (mins) <input type='number' id='duration'></input>
+        Duration (mins) <input type='number' id='duration'>
         <br>
-        Earliest date <input type='date' id='earliest'></input>
+        Earliest date <input type='date' id='earliest'>
         <br>
-        Latest date <input type='date' id='latest'></input>
+        Latest date <input type='date' id='latest'>
         <br>
-        Participants <input type='text' id='participants'></input>
+        Participants <input type='text' id='participants'>
         <br>
         <button onclick='createevent()'>Create event</button>
+        <button onclick='cancel()'>Cancel</button>
     </div>
 </body>
 </html>

@@ -34,24 +34,29 @@ var register = function() {
     })
 }
 
-// show the create event form and hide rest of page
-var showcreateevent = function() {
-    $('#app').hide()
-    $('#create').show()
-}
-
 // called when the create event form button is clicked
 var createevent = function() {
     if (!signedin) return
-
-
-
     let eventdesc = $('#description').val()
     let eventdur = $('#duration').val()
     let earliestdate = $('#earliest').val()
     let latestdate = $('#latest').val()
     let participants = $('#participants').val().split(' ')
-    if (participants[0] === '') participants = []
+    // check if any of the form fields are empty
+    if (!(eventdesc && eventdur && earliestdate && latestdate && participants)) {
+        alert('Missing information')
+        return
+    }
+    // check if event duration is positive
+    if (parseInt(eventdur) < 1) {
+        alert('Invalid duration')
+        return
+    }
+    if (participants[0] === '') {
+        alert('Event must have participants')
+        return
+    }
+    // send event information to server
     socket.emit('addevent', {
         desc: eventdesc,
         duration: eventdur,
@@ -59,9 +64,42 @@ var createevent = function() {
         latest: latestdate,
         participants: participants,
     })
+    // Reset form
+    $('#description').val('')
+    $('#duration').val('')
+    $('#earliest').val('')
+    $('#latest').val('')
+    $('#participants').val('')
 
+    // hide create event form and buttons, show app
     $('#create').hide()
     $('#app').show()
+}
+
+// show the create event form and hide rest of page
+var showcreateevent = function() {
+    $('#app').hide()
+    $('#create').show()
+}
+
+var cancel = function() {
+    $('#create').hide()
+    $('#app').show()
+}
+
+var viewing = false
+
+var searchuser = function() {
+    socket.emit('update', $('#search').val())
+    $('#search').val('')
+    viewing = true
+    $('#goback').show()
+}
+
+var goback = function() {
+    viewing = false
+    socket.emit('update')
+    $('#goback').hide()
 }
 
 // the day that is currently being viewed
@@ -95,6 +133,7 @@ var updateBusy = function(busySlots) {
 }
 // display the user's events on the currently viewed day
 var updateEvents = function(events) {
+    if (viewing) return
 
     function pad2(number) {
 
@@ -125,15 +164,15 @@ socket.on('update', function(data) {
     updateAll()
 })
 
-// update every second
-setInterval(function() {
+socket.on('requestUpdate', function() {
     socket.emit('update')
-}, 1000)
+})
 
 // add event listeners
 $(document).ready(function() {
     // when free slot is clicked
     $('tr#free td').click(function() {
+        if (viewing) return
         this.style.backgroundColor = this.style.backgroundColor == 'green' ? 'grey' : 'green';
         socket.emit('togglefree', {
             date: dateView.getTime(),
@@ -176,4 +215,8 @@ socket.on('signinfail', function() {
 
 socket.on('registered', function() {
     alert('Registered')
+})
+
+socket.on('eventFail', function() {
+    alert('Failed to create event')
 })
